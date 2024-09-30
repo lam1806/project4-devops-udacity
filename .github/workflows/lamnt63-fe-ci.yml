@@ -9,7 +9,6 @@ on:
       - 'frontend/**'
 env:
   NODE_VERSION: 18.x
-
 jobs:
   linting:
     runs-on: ubuntu-latest

@@ -28,6 +28,5 @@ jobs:
           IMAGE_TAG: latest
         run: kustomize edit set image frontend=$REGISTRY/$REPOSITORY:$IMAGE_TAG
         working-directory: ./starter/frontend/k8s
-
       - run: kustomize build | kubectl apply -f -
         working-directory: ./starter/frontend/k8s
