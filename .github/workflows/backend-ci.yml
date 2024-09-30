@@ -9,7 +9,7 @@ on:
       - 'starter/backend/**'
 
 env:
-  PYTHON_VERSION: 3.10
+  PYTHON_VERSION: 3.11
 jobs:
   linting:
     runs-on: ubuntu-latest
