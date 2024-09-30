@@ -17,8 +17,6 @@ jobs:
       run:
         working-directory: ./starter/frontend
     steps:
-      - uses: actions/checkout@v3
-
       - uses: actions/cache@v3
         with:
           path: ~/.npm
