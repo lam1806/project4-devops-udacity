@@ -275,7 +275,7 @@ resource "aws_codebuild_project" "codebuild" {
 
   source {
     type            = "GITHUB"
-    location        = "https://github.com/your-org/your-repo"
+    location        = "https://github.com/lam1806/project4-devops-udacity"
     git_clone_depth = 1
     buildspec       = "buildspec.yml"
   }

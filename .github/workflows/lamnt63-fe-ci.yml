@@ -5,10 +5,10 @@ on:
   workflow_dispatch:
   pull_request:
     branches:
-      - main
+    - main
     paths:
-      # This will only run on changes to the frontend code
-      - "frontend/**"
+    # This will only run on changes to the frontend code
+    - "frontend/**"
 env:
   NODE_VERSION: 18.x
 
@@ -21,24 +21,24 @@ jobs:
       run:
         working-directory: ./starter/frontend
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+    - name: Checkout code
+      uses: actions/checkout@v3
 
-      - name: Cache Node.js dependencies
-        uses: actions/cache@v3
-        with:
-          path: ~/.npm
-          key: npm-${{ hashFiles('frontend/package-lock.json') }}
-          restore-keys: |
-            npm-
+    - name: Cache Node.js dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.npm
+        key: npm-${{ hashFiles('frontend/package-lock.json') }}
+        restore-keys: |
+          npm-
 
-      - name: Install dependencies
-        run: |
-          npm install
+    - name: Install dependencies
+      run: |
+        npm install
 
-      - name: Run ESLint
-        run: |
-          npm run lint -- --fix
+    - name: Run ESLint
+      run: |
+        npm run lint -- --fix
 
   test:
     name: Frontend Testing
@@ -47,14 +47,14 @@ jobs:
       run:
         working-directory: ./starter/frontend
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-      - name: Install dependencies
-        run: |
-          npm install -f
-      - name: Run tests
-        run: |
-          npm run test
+    - name: Checkout code
+      uses: actions/checkout@v3
+    - name: Install dependencies
+      run: |
+        npm install -f
+    - name: Run tests
+      run: |
+        npm run test
   build:
     name: Build & Push Docker image
     runs-on: ubuntu-latest
@@ -63,40 +63,40 @@ jobs:
       run:
         working-directory: ./starter/frontend
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+    - name: Checkout code
+      uses: actions/checkout@v3
 
-      - name: Install dependencies
-        run: |
-          npm install
+    - name: Install dependencies
+      run: |
+        npm install
 
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1
 
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v1
-        with:
-          mask-password: "true"
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
+      with:
+        mask-password: "true"
 
-      - name: Build, Tag, and Push docker image
-        env:
-          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          REPOSITORY: frontend
-          IMAGE_TAG: latest
-        run: |
-          aws eks update-kubeconfig --name cluster
-          export EXTERNALIP=$(kubectl get svc backend -o=jsonpath='{.status.loadBalancer.ingress[0].hostname}{"\n"}{.status.loadBalancer.ingress[0].ip}')
-          echo $EXTERNALIP
-          docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG --build-arg=REACT_APP_MOVIE_API_URL=http://$EXTERNALIP .
-          docker images
+    - name: Build, Tag, and Push docker image
+      env:
+        REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        REPOSITORY: frontend
+        IMAGE_TAG: latest
+      run: |
+        aws eks update-kubeconfig --name cluster
+        export EXTERNALIP=$(kubectl get svc backend -o=jsonpath='{.status.loadBalancer.ingress[0].hostname}{"\n"}{.status.loadBalancer.ingress[0].ip}')
+        echo $EXTERNALIP
+        docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG --build-arg=REACT_APP_MOVIE_API_URL=http://$EXTERNALIP .
+        docker images
 
-      - name: Cache Docker image
-        uses: actions/cache@v3
-        with:
-          path: ~/docker-cache
-          key: docker-${{ github.sha }}-frontend
+    - name: Cache Docker image
+      uses: actions/cache@v3
+      with:
+        path: ~/docker-cache
+        key: docker-${{ github.sha }}-frontend
