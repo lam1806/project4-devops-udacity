@@ -13,20 +13,14 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-
       - uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
-
       - run: aws eks update-kubeconfig --name cluster
-
-      - run: |
-          if [ -f ./init.sh ]; then ./init.sh; fi
+      - run: .init.sh || true
         working-directory: ./setup
-
       - env:
           REGISTRY: ${{ steps.ecr-login.outputs.registry }}
           REPOSITORY: frontend
