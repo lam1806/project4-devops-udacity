@@ -1,4 +1,4 @@
-name: Frontend CI/CD Pipeline
+name: Frontend Continuous Deployment
 
 on:
   workflow_dispatch:
@@ -7,84 +7,31 @@ on:
       - main
     paths:
       - 'frontend/**'
-env:
-  NODE_VERSION: 18.x
+
 jobs:
-  linting:
+  deploy:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./starter/frontend
     steps:
       - uses: actions/checkout@v3
 
-      - uses: actions/cache@v3
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-npm-${{ hashFiles('frontend/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-npm-
-      - run: npm ci
-      - run: npm run lint -- --fix
-  testing:
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./starter/frontend
-    steps:
-      - uses: actions/checkout@v3
-      - run: npm ci
-      - run: npm test
-  build_and_push:
-    runs-on: ubuntu-latest
-    needs: [linting, testing]
-    defaults:
-      run:
-        working-directory: ./starter/frontend
-    steps:
-      - uses: actions/checkout@v3
-      - run: npm ci
       - uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
-      - id: ecr-login
-        uses: aws-actions/amazon-ecr-login@v1
-      - run: docker pull ${{ steps.ecr-login.outputs.registry }}/frontend:latest || true
-      - env:
-          REGISTRY: ${{ steps.ecr-login.outputs.registry }}
-          REPOSITORY: frontend
-          IMAGE_TAG: latest
-        run: |
-          aws eks update-kubeconfig --name cluster
-          EXTERNALIP=$(kubectl get svc backend -o=jsonpath='{.status.loadBalancer.ingress[0].hostname}')
-          docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG --build-arg REACT_APP_MOVIE_API_URL=http://$EXTERNALIP .
-          docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
-      - uses: actions/cache@v3
-        with:
-          path: ~/docker-cache
-          key: docker-cache-${{ github.sha }}
-          restore-keys: docker-cache-
-  deploy:
-    runs-on: ubuntu-latest
-    needs: [build_and_push]
-    steps:
-      - uses: actions/checkout@v3
-      - uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
+
       - run: aws eks update-kubeconfig --name cluster
+
       - run: |
           if [ -f ./init.sh ]; then ./init.sh; fi
         working-directory: ./setup
+
       - env:
           REGISTRY: ${{ steps.ecr-login.outputs.registry }}
           REPOSITORY: frontend
           IMAGE_TAG: latest
         run: kustomize edit set image frontend=$REGISTRY/$REPOSITORY:$IMAGE_TAG
         working-directory: ./starter/frontend/k8s
+
       - run: kustomize build | kubectl apply -f -
         working-directory: ./starter/frontend/k8s
