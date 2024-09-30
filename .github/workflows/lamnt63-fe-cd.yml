@@ -133,7 +133,7 @@ jobs:
 
       - name: Run init.sh
         run:  |
-          ./setup/init.sh || true
+          ./init.sh || true
         working-directory: ./setup/setup
 
       - name: Set Docker image in Kustomize
