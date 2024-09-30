@@ -1,13 +1,11 @@
 name: Backend Continuous Deployment
 
 on:
-  # This allows running on-demand
   workflow_dispatch:
   push:
     branches:
       - main
     paths:
-      # This will only run on changes to the backend code
       - 'backend/**'
 
 env:
