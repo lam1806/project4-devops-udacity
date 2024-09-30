@@ -6,7 +6,7 @@ on:
     branches:
       - main
     paths:
-      - 'frontend/**'
+      - 'starter/frontend/**'
 env:
   NODE_VERSION: 18.x
 jobs:
