@@ -7,7 +7,8 @@ on:
       - main
     paths:
       - 'frontend/**'
-
+env:
+  NODE_VERSION: 18.x
 jobs:
   deploy:
     runs-on: ubuntu-latest
