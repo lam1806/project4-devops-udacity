@@ -19,6 +19,8 @@ EKS : ![EKS](./ScreenShot/eks-1.png)
 
 VPC:  ![VPC](./ScreenShot/vpc.png)
 EC2:  ![EC2](./ScreenShot/ec-2.png)
+IAM : ![IAM](./ScreenShot/iam.png)
+      ![Key](./ScreenShot/key.png)
 
 Load Balancer : ![ELB](./ScreenShot/lb.png)
 
